@@ -1,0 +1,418 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <time.h>
+#include <string>
+using namespace std;
+
+
+
+//按字母逐个解析
+class TKR {
+private:
+	string result;
+	string json;//
+
+public:
+	int parse(string _json) {
+		json = _json;
+		return Json(json);
+	}
+	//开始处理文件流
+	int Json(string json) {
+		int start = 0, end = 0;
+		int i = 1, j = 0;
+		result += json[0];
+		for (; i < json.size(); i++) {
+			if (json[i] == '\"') {
+				start = i;
+				for (j = i + 1; j < json.size(); j++) {
+					if (json[j] == '\"') {
+						end = j;
+						string t;
+						t = json.substr(start, end + 1 - start);
+						result += Fuc_p(t);
+						i = end + 1;
+						break;
+					}
+				}
+			}
+			if (json[i] == '{') {
+				start = i;
+				for (j = i; j < json.size(); j++) {
+					if (json[j] == '}') {
+						end = j;
+						string t;
+						t = json.substr(start, end + 1 - start);
+						result += Fuc_p(t);
+						i = end + 1;
+						break;
+					}
+				}
+			}
+			if (json[i] == '[') {
+				start = i;
+				for (j = i; j < json.size(); j++) {
+					if (json[j] == ']' && json[j + 1] != '\"') {
+						end = j;
+						string t;
+						t = json.substr(start, end + 1 - start);
+						result += Fuc_p(t);
+						i = end + 1;
+						break;
+					}
+				}
+			}
+			result += json[i];
+		}
+		return 0;
+
+	}
+
+	void show() {
+		cout << result << endl;
+	}
+
+	string input(string filename);
+	string Int_p(string str);
+	string Bool_p(string str);
+	string String_p(string str);
+	string Resolut1_p(string str);
+	string Resulte_p(string str);
+	string Fuc_p(string str);
+
+};
+
+
+
+string TKR::input(string filename)//将文件读入字符串
+{
+	string json;
+	char c;
+	fstream fp;//定义一个文件的输入输出流
+	fp.open(filename, ios::in);//s是文件名
+	if (!fp)
+	{
+		cout << filename << "文件打开失败" << endl;
+	}
+	while (1)
+	{
+		fp.get(c);//从文件中读取字符c
+		if (fp.eof()) break;//文件读完了，跳出循环
+		json.push_back(c);//在json的尾部插入数据c
+	}
+	fp.close();
+	return json;
+}
+
+string TKR::Int_p(string str) {
+
+	//Int 处理int 类型的字符串
+	//"int(...)"
+	int xiabiao = 0;
+	if (str[xiabiao + 1] == 'i' && str[xiabiao + 4] == '(') {
+		vector <int> a;//声明一个int型的向量a
+		int t = 0;
+		for (; t < str.size(); t++)
+		{
+			//,3,
+			if (str[t] == '\,' || str[t] == '(') {
+				int t2 = t;
+				for (; t2 < str.size(); t2++) {
+					if (str[t2] == '\,')
+					{
+						int target;
+						string s = str.substr(t + 1, (t2 - t - 1));
+						target = stoul(s);//将字符串转换成整型数
+						a.push_back(target);
+						break;
+					}
+
+				}
+			}
+			//5-9,   5-9)
+			if (str[t] == '-') {
+				int start = 0, end = 0; int p1 = 0, p2 = 0;
+				int i = t;
+				while (i--) {
+					if (str[i] == ',' || str[i] == '(') {
+						p1 = i;
+						break;
+					}
+				}
+				while (i++) {
+					if (str[i] == ',' || str[i] == ')') {
+						p2 = i;
+						break;
+					}
+				}
+				string s1 = str.substr(p1 + 1, t - p1 - 1),
+					s2 = str.substr(t + 1, p2 - t - 1);
+				start = stoul(s1), end = stoul(s2);
+				for (int m = start; m <= end; m++) {
+					a.push_back(m);
+				}
+			}
+
+		}
+		int target = 0;
+		target = a[rand() % a.size()];
+		return  to_string(target);
+	}
+	//"int"
+	if (str[xiabiao + 1] == 'i' && str[xiabiao + 2] == 'n' && str[xiabiao + 3] == 't' && str[xiabiao + 4] == '"') {
+		return  to_string(rand() % 10);
+	}
+
+}
+
+string TKR::Bool_p(string str) {
+	//bool   处理bool 类型的字符串
+	int xiabiao = 0;
+	if (str[xiabiao + 1] == 'b' && str[xiabiao + 2] == 'o' && str[xiabiao + 3] == 'o' && str[xiabiao + 4] == 'l' && str[xiabiao + 5] == '"') {
+		string s;
+		if (rand() % 2 == 1)
+			s = "true";
+		else
+			s = "false";
+		return s;
+	}
+
+}
+
+string TKR::String_p(string str) {
+
+	if (str.find("\"string") != string::npos) {
+		vector <string> text = {
+	
+	"Output string",
+	"Definition of string",
+	"String comparison"
+		};
+		//string   处理string类型的字符串
+		vector<string> a;
+		int start = 0, end = 0;
+		int i = 0, j = 0;
+		//"string"
+		if (str[i + 1] == 's' && str[i + 2] == 't' && str[i + 3] == 'r' && str[i + 4] == 'i' && str[i + 5] == 'n' && str[i + 6] == 'g' && str[i + 7] == '\"') {
+			return   '"' + text[rand() % text.size()] + '"';
+		}
+		//"\"string('Bus', 'Car', 'Bike')\""
+		if (str[i + 1] == 's' && str[i + 2] == 't' && str[i + 3] == 'r'
+			&& str[i + 4] == 'i' && str[i + 5] == 'n' && str[i + 6] == 'g' && str[i + 7] == '(') {
+
+			for (; i < str.size(); i++)
+			{
+				if (str[i] == '\'') {
+					start = i;
+					for (j = i + 1; j < str.size(); j++)
+					{
+						if (str[j] == '\'') {
+							end = j;
+							i = end;
+							break;
+						}
+					}
+					string sstr = str.substr(start + 1, (end - 1 - start));
+					a.push_back(sstr);
+
+				}
+
+			}
+
+			return "\"" + a[rand() % a.size()] + "\"";
+
+		}
+	}
+	else
+		return str;
+}
+//{....}
+string TKR::Resolut1_p(string str) {
+	const string s1 = "\"int(";
+	string sstr;
+	int start = 0, end = 0; int i = 0, j = 0;
+	string res;
+	//找到首尾的下标
+	for (; i < str.size(); i++) {
+		//int 
+		if (str[i] == '"' && str[i + 1] == 'i' && str[i + 2] == 'n' && str[i + 3] == 't') {
+			start = i;
+			for (j = i + 1; j < str.size(); j++) {
+				if (str[j] == '\"') {
+					end = j;
+					i = end;
+					break;
+				}
+
+
+			}
+			sstr = str.substr(start, (end + 1 - start));
+			i++;
+			res += Int_p(sstr);
+
+		}
+		//string
+		if (str[i] == '"' && str[i + 1] == 's' && str[i + 2] == 't'
+			&& str[i + 3] == 'r' && str[i + 4] == 'i' && str[i + 5] == 'n' && str[i + 6] == 'g') {
+			start = i;
+			for (j = i + 1; j < str.size(); j++) {
+				if (str[j] == '\"') {
+					end = j;
+					i = end;
+					break;
+				}
+
+
+			}
+			sstr = str.substr(start, (end + 1 - start));
+			i++;
+			res += String_p(sstr);
+		}
+
+		res += str[i];
+	}
+	return res;
+}
+//[.....]
+string TKR::Resulte_p(string str) {
+	string res;
+	//["repeat ", "emem"]
+	if (str.find("repeat") != string::npos) {
+		int times = 0;
+		int start = 0, end = 0;
+		string  n;
+		int i = 0, j = 0; int cnt = 0;
+		string ssstr;
+		for (; i < str.size(); i++) {
+			//给times 赋值
+			if (str[i + 1] == 'r' && str[i + 2] == 'e' && str[i + 3] == 'p'
+				&& str[i + 4] == 'e' && str[i + 5] == 'a' && str[i + 6] == 't') {
+				//str[i+7]== '[';
+				start = i + 7;
+				// str[end] = ']'
+				for (j = start; j < str.size(); j++) {
+					if (str[j] == ']') {
+						end = j;
+						i = end;
+						break;
+					}
+				}
+				n = str.substr(start + 1, (end - 1 - start));
+				times = stoul(n);
+				//获得要进行repeat的值
+				int flag1 = 0, flag2 = 0;
+				for (j = i; j < str.size(); j++) {
+					if (str.find('{') == string::npos) //在str中找不到字符串
+					{
+						if (str[j] == '\"')  cnt++;
+						if (cnt == 2 && flag1 == 0) {
+							start = j;
+							flag1 = 1;
+						}
+						if (cnt == 3 && flag2 == 0) {
+							flag2 = 1;
+							end = j;
+							i = j + 1;
+							ssstr = str.substr(start, (end + 1 - start));
+							//获得repeat后的字符串
+							while (times--) {
+								if (times >= 1) {
+									res += Fuc_p(ssstr) + ',' + '\t';
+								}
+								else
+									res += Fuc_p(ssstr);
+							}
+							break;
+						}
+					}
+					else {
+						start = str.find('{');
+						end = str.find('}');
+						i = end + 1;
+						ssstr = str.substr(start, (end + 1 - start));
+						//获得repeat后的字符串
+						while (times--) {
+							if (times >= 1) {
+								res += Fuc_p(ssstr) + ',' + '\t';
+							}
+							else
+								res += Fuc_p(ssstr);
+						}
+						break;
+					}
+
+
+
+				}
+			}
+			res += str[i];
+		}
+
+	}
+	else
+		//单纯的[elem,elem,elem]
+	{
+		vector <string > m;
+		int start = 0, end = 0;
+		int i = 0, j = 0;
+		for (; i < str.size(); i++) {
+			if (str[i] == '[') {
+				start = i;
+			}
+			if (str[i] == ',' || str[i] == ']') {
+				end = i;
+				string temp;
+				temp = str.substr(start + 1, end - start - 1);
+				m.push_back(temp);
+				start = i;
+
+			}
+		}
+
+		res += m[rand() % m.size()];
+
+	}
+	return res;
+}
+
+string TKR::Fuc_p(string str) {
+	int xiabiao = 0;
+	if (str[xiabiao + 1] == 'i' && str[xiabiao + 2] == 'n' && str[xiabiao + 3] == 't') {
+		return Int_p(str);
+	}
+    else if (str[xiabiao] == '\"') {
+		return String_p(str);
+	}
+
+    else if (str[xiabiao] == '{') {
+		return Resolut1_p(str);
+	}
+
+	
+    else if (str[xiabiao] == '[') {
+		return Resulte_p(str);
+	}
+    else if (str[xiabiao + 1] == 'b' && str[xiabiao + 2] == 'o' && str[xiabiao + 3] == 'o' && str[xiabiao + 4] == 'l' && str[xiabiao + 5] == '"') {
+		return Bool_p(str);
+	}
+	else if (str[xiabiao + 1] == 's' && str[xiabiao + 2] == 't' && str[xiabiao + 3] == 'r'
+		&& str[xiabiao + 4] == 'i' && str[xiabiao + 5] == 'n' && str[xiabiao + 6] == 'g') {
+		return String_p(str);
+	}
+	
+	
+	
+
+}
+
+
+int main() {
+	srand(time(0));
+	TKR  xp;
+	string json = xp.input("final.txt");
+	xp.parse(json);
+	xp.show();
+	return 0;
+}
+
