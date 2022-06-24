@@ -1,0 +1,301 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <time.h>
+#include <string>
+#include "标头.h"
+using namespace std;
+
+int main() {
+	srand(time(0));
+	Tokener  xp;
+	string json = xp.Myinput("final.txt");
+	xp.parse(json);
+	xp.show();
+	return 0;
+}
+
+
+#pragma once
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <time.h>
+
+#include <string>
+
+using namespace std;
+
+enum {
+	parse_ok = 0,
+	wrong,
+	Parse_end
+}situation;
+//按字母逐个解析
+class Tokener {
+private:
+	string result;
+	string json;
+
+public:
+	int parse(string _json) {
+		json = _json;
+		return Deal(json);
+	}
+	//开始处理文件流
+	int Deal(string json) {
+		int start = 0, end = 0;
+		int i = 1, j = 0;
+		result += json[0];
+		;		for (; i < json.size(); i++) {
+			if (json[i] == '\"') {
+				start = i;
+				for (j = i + 1; j < json.size(); j++) {
+					if (json[j] == '\"') {
+						end = j;
+						string temp;
+						temp = json.substr(start, end + 1 - start);
+						result += Fuc_parse(temp);
+						i = end + 1;
+						break;
+					}
+				}
+			}
+			if (json[i] == '{') {
+				start = i;
+				for (j = i; j < json.size(); j++) {
+					if (json[j] == '}') {
+						end = j;
+						string temp;
+						temp = json.substr(start, end + 1 - start);
+						result += Fuc_parse(temp);
+						i = end + 1;
+						break;
+					}
+				}
+			}
+			if (json[i] == '[') {
+				start = i;
+				for (j = i; j < json.size(); j++) {
+					if (json[j] == ']' && json[j + 1] != '\"') {
+						end = j;
+						string temp;
+						temp = json.substr(start, end + 1 - start);
+						result += Fuc_parse(temp);
+						i = end + 1;
+						break;
+					}
+				}
+			}
+			result += json[i];
+		}
+		return parse_ok;
+
+	}
+
+	void show() {
+		cout << result << endl;
+	}
+
+	string Myinput(string filename);
+	string Int_parse(string str);
+	string Bool_parse(string str);
+	string String_parse(string str);
+	string Resolut1_parse(string str);
+	string Resulte_parse(string str);
+	string Fuc_parse(string str);
+
+};
+
+
+
+string Tokener::Myinput(string filename)//将文件读入字符串
+{
+	string json;
+	char c;
+	fstream fp;//定义一个文件的输入输出流
+	fp.open(filename, ios::in);//s是文件名
+	if (!fp)
+	{
+		cout << filename << "文件打开失败" << endl;
+	}
+	while (1)
+	{
+		fp.get(c);//从文件中读取字符c
+		if (fp.eof()) break;//文件读完了，跳出循环
+		json.push_back(c);//在json的尾部插入数据c
+	}
+	fp.close();
+	return json;
+}
+
+string Tokener::Int_parse(string str) {
+
+	//Int 处理int 类型的字符串
+	//"int(...)"
+	int index = 0;
+	if (str[index + 1] == 'i' && str[index + 2] == 'n' && str[index + 3] == 't' && str[index + 4] == '(') {
+		vector <int> a;//声明一个int型的向量a
+		int temp = 0;
+		for (; temp < str.size(); temp++)
+		{
+			//,3,
+			if (str[temp] == '\,' || str[temp] == '(') {
+				int temp2 = temp;
+				for (; temp2 < str.size(); temp2++) {
+					if (str[temp2] == '\,')
+					{
+						int target;
+						string s = str.substr(temp + 1, (temp2 - temp - 1));
+						target = stoul(s);
+						a.push_back(target);
+						break;
+					}
+
+				}
+			}
+			//5-9,   5-9)
+			if (str[temp] == '-') {
+				int start = 0, end = 0; int pos1 = 0, pos2 = 0;
+				int i = temp;
+				while (i--) {
+					if (str[i] == ',' || str[i] == '(') {
+						pos1 = i;
+						break;
+					}
+				}
+				while (i++) {
+					if (str[i] == ',' || str[i] == ')') {
+						pos2 = i;
+						break;
+					}
+				}
+				string s1 = str.substr(pos1 + 1, temp - pos1 - 1),
+					s2 = str.substr(temp + 1, pos2 - temp - 1);
+				start = stoul(s1), end = stoul(s2);
+				for (int m = start; m <= end; m++) {
+					a.push_back(m);
+				}
+			}
+
+		}
+		int target = 0;
+		target = a[rand() % a.size()];
+		return  to_string(target);
+	}
+	//"int"
+	if (str[index + 1] == 'i' && str[index + 2] == 'n' && str[index + 3] == 't' && str[index + 4] == '"') {
+		return  to_string(rand() % 10);
+	}
+
+}
+
+string Tokener::Bool_parse(string str) {
+	//bool   处理boi=ol 类型的字符串
+	int index = 0;
+	if (str[index + 1] == 'b' && str[index + 2] == 'o' && str[index + 3] == 'o' && str[index + 4] == 'l' && str[index + 5] == '"') {
+		string s;
+		if (rand() % 2 == 1)
+			s = "true";
+		else
+			s = "false";
+		return s;
+	}
+
+}
+
+string Tokener::String_parse(string str) {
+
+	if (str.find("\"string") != string::npos) {
+		vector <string> text = {
+	"Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+	"Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+	"No one indebted for others,while many people don't know how to cherish others.",
+	"Eternity is not a distance but a decision."
+		};
+		//string   处理string类型的字符串
+		vector<string> a;
+		int start = 0, end = 0;
+		int i = 0, j = 0;
+		//"string"
+		if (str[i + 1] == 's' && str[i + 2] == 't' && str[i + 3] == 'r' && str[i + 4] == 'i' && str[i + 5] == 'n' && str[i + 6] == 'g' && str[i + 7] == '\"') {
+			return   '"' + text[rand() % text.size()] + '"';
+		}
+		//"\"string('Bus', 'Car', 'Bike')\""
+		if (str[i + 1] == 's' && str[i + 2] == 't' && str[i + 3] == 'r'
+			&& str[i + 4] == 'i' && str[i + 5] == 'n' && str[i + 6] == 'g' && str[i + 7] == '(') {
+
+			for (; i < str.size(); i++)
+			{
+				if (str[i] == '\'') {
+					start = i;
+					for (j = i + 1; j < str.size(); j++)
+					{
+						if (str[j] == '\'') {
+							end = j;
+							i = end;
+							break;
+						}
+					}
+					string sstr = str.substr(start + 1, (end - 1 - start));
+					a.push_back(sstr);
+
+				}
+
+			}
+
+			return "\"" + a[rand() % a.size()] + "\"";
+
+		}
+	}
+	else
+		return str;
+}
+//{....}
+string Tokener::Resolut1_parse(string str) {
+	const string s1 = "\"int(";
+	string sstr;
+	int start = 0, end = 0; int i = 0, j = 0;
+	string res;
+	//找到首尾的下标
+	for (; i < str.size(); i++) {
+		//int 
+		if (str[i] == '"' && str[i + 1] == 'i' && str[i + 2] == 'n' && str[i + 3] == 't') {
+			start = i;
+			for (j = i + 1; j < str.size(); j++) {
+				if (str[j] == '\"') {
+					end = j;
+					i = end;
+					break;
+				}
+
+
+			}
+			sstr = str.substr(start, (end + 1 - start));
+			i++;
+			res += Int_parse(sstr);
+
+		}
+		//string
+		if (str[i] == '"' && str[i + 1] == 's' && str[i + 2] == 't'
+			&& str[i + 3] == 'r' && str[i + 4] == 'i' && str[i + 5] == 'n' && str[i + 6] == 'g') {
+			start = i;
+			for (j = i + 1; j < str.size(); j++) {
+				if (str[j] == '\"') {
+					end = j;
+					i = end;
+					break;
+				}
+
+
+			}
+			sstr = str.substr(start, (end + 1 - start));
+			i++;
+			res += String_parse(sstr);
+		}
+
+		res += str[i];
+	}
+	return res;
+}
