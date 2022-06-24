@@ -1,0 +1,139 @@
+#pragma once
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <time.h>
+
+#include <string>
+
+using namespace std;
+
+enum {
+	parse_ok = 0,
+	wrong,
+	Parse_end
+}situation;
+//按字母逐个解析
+class Tokener {
+private:
+	string result;
+	string json;
+
+public:
+	int parse(string _json) {
+		json = _json;
+		return Deal(json);
+	}
+	//开始处理文件流
+	int Deal(string json) {
+		int start = 0, end = 0;
+		int i = 1, j = 0;
+		result += json[0];
+;		for (; i < json.size(); i++) {
+			if (json[i] == '\"') {
+				start = i;
+				for (j = i + 1; j < json.size(); j++) {
+					if (json[j] == '\"') {
+						end = j;
+						string temp;
+						temp = json.substr(start, end + 1 - start);
+						result += Fuc_parse(temp);
+						i = end+1;
+						break;
+					}
+				}
+			}
+			 if (json[i] == '{') {
+				start = i;
+				for (j = i ; j < json.size(); j++) {
+					if (json[j] == '}') {
+						end = j;
+						string temp;
+						temp = json.substr(start, end + 1 - start);
+						result += Fuc_parse(temp);
+						i = end+1;
+						break;
+					}
+				}
+			}
+			 if (json[i] == '[') {
+				start = i;
+				for (j = i ; j < json.size(); j++) {
+					if (json[j] == ']'&&json[j+1]!='\"'){
+						end = j;
+						string temp;
+						temp = json.substr(start, end + 1 - start);
+						result += Fuc_parse(temp);
+						i = end+1;
+						break;
+					}
+				}
+			}
+			result += json[i];
+		}
+		return parse_ok;
+
+	}
+
+	void show() {
+		cout << result << endl;
+	}
+
+	string Myinput(string filename);
+	string Int_parse(string str);
+	string Bool_parse(string str);
+	string String_parse(string str);
+	string Resolut1_parse(string str);
+	string Resulte_parse(string str);
+	string Fuc_parse(string str);
+
+};
+
+
+
+string Tokener::Myinput(string filename)//将文件读入字符串
+{
+	string json;
+	char c;
+	fstream fp;
+	fp.open(filename, ios::in);//s是文件名
+	if (!fp)
+	{
+		cout << filename << "文件打开失败" << endl;
+	}
+	while (1)
+	{
+		fp.get(c);
+		if (fp.eof()) break;
+		json.push_back(c);
+	}
+	fp.close();
+	return json;
+}
+
+string Tokener::Int_parse(string str) {
+
+	//Int 处理int 类型的字符串
+	//"int(...)"
+	int index = 0;
+	if (str[index + 1] == 'i' && str[index + 2] == 'n' && str[index + 3] == 't' && str[index + 4] == '(') {
+		vector <int> a;
+		int temp = 0;
+		for (; temp < str.size(); temp++)
+		{
+			//,3,
+			if (str[temp] == '\,' || str[temp] == '(') {
+				int temp2 = temp;
+				for (; temp2 < str.size(); temp2++) {
+					if (str[temp2] == '\,')
+					{
+						int target;
+						string s = str.substr(temp + 1, (temp2 - temp - 1));
+						target = stoul(s);
+						a.push_back(target);
+						break;
+					}
+
+				}
+			}
