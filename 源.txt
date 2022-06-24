@@ -1,0 +1,70 @@
+//#include <iostream>
+//#include <fstream>
+//#include <vector>
+//#include <time.h>
+//#include <string>
+//#include "标头.h"
+//using namespace std;
+//
+//int main() {
+//	srand(time(0));
+//	Tokener  xp;
+//	string json = xp.Myinput("final.txt");
+//	xp.parse(json);
+//	xp.show();
+//	return 0;
+//}
+
+
+#pragma once
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <time.h>
+
+#include <string>
+
+using namespace std;
+
+enum {
+	parse_ok = 0,
+	wrong,
+	Parse_end
+}situation;
+//按字母逐个解析
+class Tokener {
+private:
+	string result;
+	string json;
+
+public:
+	int parse(string _json) {
+		json = _json;
+		return Deal(json);
+	}
+	//开始处理文件流
+	int Deal(string json) {
+		int start = 0, end = 0;
+		int i = 1, j = 0;
+		result += json[0];
+		;		for (; i < json.size(); i++) {
+			if (json[i] == '\"') {
+				start = i;
+				for (j = i + 1; j < json.size(); j++) {
+					if (json[j] == '\"') {
+						end = j;
+						string temp;
+						temp = json.substr(start, end + 1 - start);
+						result += Fuc_parse(temp);
+						i = end + 1;
+						break;
+					}
+				}
+			}
+			
+}
+
+
+
+
